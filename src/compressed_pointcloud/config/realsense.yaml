@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    input_topic: /camera/camera/depth/color/points
+    output_topic: /camera/camera/depth/color/points/compressed
+    quantization_bits: 14
+    compression_level: 5
+    preserve_order: false
+    skip_nans: true
+    # RealSense textured cloud uses rgb (float32 bit-packed)
+    extra_fields: [rgb]
+    log_stats: true

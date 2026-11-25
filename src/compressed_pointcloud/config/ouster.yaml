@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    input_topic: /ouster/points
+    output_topic: /ouster/points/compressed
+    quantization_bits: 14
+    compression_level: 7
+    preserve_order: false
+    skip_nans: true
+    # Carry these when present on the Ouster PointCloud2
+    extra_fields: [ring, reflectivity, signal]
+    log_stats: true

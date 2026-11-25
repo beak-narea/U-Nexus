@@ -1,0 +1,54 @@
+# Config for a dual-channel MDROBOT controller (PNT50, MD400T) laid out as a
+# 2-wheel differential base.
+#
+# Two sections:
+#   mdrobot_hardware  - serial connection + controller settings. bringup.launch.py
+#                       reads this and injects it into the URDF; controller_manager
+#                       ignores it. Edit your port / motor_id / counts_per_rev HERE.
+#   controller_manager / diff_cont - the controllers themselves.
+#
+# diff_cont drives motor_L (left) / motor_R (right) from /diff_cont/cmd_vel.
+# wheel_separation / wheel_radius are placeholders — set them for your robot.
+mdrobot_hardware:
+  ros__parameters:
+    port: /dev/ttyUSB0
+    baudrate: 19200
+    motor_id: 1           # one controller, two channels -> a single slave id
+    use_limit_sw: -1      # -1 leave as-is / 0 disable / 1 enable (some need 0 for serial)
+    auto_enable: true
+    counts_per_rev: 12.0  # PNT50 measured = 12 (hall 3 x 4-pole). ⚠ per motor — MEASURE if not a PNT50. 0 = raw.
+
+controller_manager:
+  ros__parameters:
+    # 15 Hz: a dual read()+write() cycle is ~3 serial round-trips at 19200 baud
+    # (monitor read + VEL_CMD 130 + VEL_CMD2 131 writes) ≈ 50 ms, so 20 Hz overruns.
+    update_rate: 15
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+
+diff_cont:
+  ros__parameters:
+    left_wheel_names: ["motor_L"]
+    right_wheel_names: ["motor_R"]
+    wheel_separation: 0.30
+    wheel_radius: 0.05
+    # State feedback is in SI when counts_per_rev is set in the URDF.
+    open_loop: false
+    base_frame_id: base_link
+    publish_rate: 20.0
+    cmd_vel_timeout: 0.5
+    # Jazzy diff_drive_controller subscribes to geometry_msgs/TwistStamped on
+    # <controller>/cmd_vel (the old use_stamped_vel toggle is gone).
+    # Keep limits permissive; the generic driver leaves safety to the robot layer.
+    linear:
+      x:
+        max_velocity: 1.0
+        min_velocity: -1.0
+    angular:
+      z:
+        max_velocity: 2.0
+        min_velocity: -2.0

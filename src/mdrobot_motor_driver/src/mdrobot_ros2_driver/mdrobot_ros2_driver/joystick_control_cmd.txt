@@ -1,0 +1,22 @@
+terminal1
+
+cd ~/narae_ws
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+
+ros2 launch mdrobot_ros2_driver dual.launch.py
+
+terminal2
+
+source /opt/ros/jazzy/setup.bash
+ros2 run joy joy_node
+
+terminal3
+
+cd ~/narae_ws/src/mdrobot_motor_driver/src/mdrobot_ros2_driver/mdrobot_ros2_driver
+python3 joystick_control.py
+
+
+If you want to check if the node is publishing properly
+
+ros2 topic echo /joy

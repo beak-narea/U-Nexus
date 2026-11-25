@@ -1,0 +1,70 @@
+# Config for a TWIN base: two single-channel MDROBOT controllers (e.g. two MD400)
+# on one serial bus at distinct slave IDs, laid out as a 2-wheel differential base.
+#
+# Two sections:
+#   mdrobot_hardware  - serial connection + PER-WHEEL controller settings.
+#                       bringup.launch.py reads this and injects it into the URDF;
+#                       controller_manager ignores it. Set EACH motor's Modbus id
+#                       (motor_id_L / motor_id_R — MUST differ), direction and
+#                       counts/rev HERE. The two controllers must already have
+#                       distinct slave ids (re-ID one with PID_ID(133) first).
+#   controller_manager / diff_cont - the controllers themselves.
+#
+# diff_cont drives motor_L (left) / motor_R (right) from /diff_cont/cmd_vel.
+# wheel_separation / wheel_radius are placeholders — set them for your robot.
+mdrobot_hardware:
+  ros__parameters:
+    port: /dev/ttyUSB0
+    baudrate: 19200
+    # Per-wheel Modbus slave ids — MUST be distinct (on_init rejects equal ids).
+    motor_id_L: 1
+    motor_id_R: 2
+    # Skid-steer mounts the motors mirrored; set the side that spins backwards true.
+    reverse_L: false
+    reverse_R: false
+    # Per-wheel counts/rev (hall = 3 x MOTOR pole count — a property of the motor,
+    # not the controller). Measured values: 8-pole = 24, 10-pole = 30.
+    # ⚠ ESTIMATE below — MEASURE each motor (examples/calibrate_counts_per_rev.py);
+    # left/right may differ if the motors are not matched. 0 = raw counts.
+    counts_per_rev_L: 24.0
+    counts_per_rev_R: 24.0
+    use_limit_sw: -1      # -1 leave as-is / 0 disable / 1 enable (some need 0 for serial)
+    auto_enable: true
+
+controller_manager:
+  ros__parameters:
+    # 10 Hz: a twin read()+write() cycle is ~4 serial round-trips at 19200 baud
+    # (2x read_monitor + 2x VEL_CMD writes) — one more than dual, because twin
+    # cannot batch the two controllers into a single transaction. ~68-78 ms of
+    # bus work, so 15 Hz overruns like dual at 20 Hz; 10 Hz leaves a safe margin.
+    # Raise to 12 only if a bench measurement of read()+write() confirms <80 ms.
+    update_rate: 10
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+
+diff_cont:
+  ros__parameters:
+    left_wheel_names: ["motor_L"]
+    right_wheel_names: ["motor_R"]
+    wheel_separation: 0.30
+    wheel_radius: 0.05
+    # State feedback is in SI when counts_per_rev is set in the URDF.
+    open_loop: false
+    base_frame_id: base_link
+    publish_rate: 20.0
+    cmd_vel_timeout: 0.5
+    # Jazzy diff_drive_controller subscribes to geometry_msgs/TwistStamped on
+    # <controller>/cmd_vel (the old use_stamped_vel toggle is gone).
+    # Keep limits permissive; the generic driver leaves safety to the robot layer.
+    linear:
+      x:
+        max_velocity: 1.0
+        min_velocity: -1.0
+    angular:
+      z:
+        max_velocity: 2.0
+        min_velocity: -2.0

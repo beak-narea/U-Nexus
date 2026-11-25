@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.installed.cfg
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Test / coverage caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ROS 2 colcon output
+/build/
+/install/
+/log/
+
+# C++ build (mdrobot_cpp)
+/build/
+*.o
+*.so
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ctest output
+/Testing/

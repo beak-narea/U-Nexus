@@ -1,0 +1,28 @@
+# game_controller_node(SDL GameController) 는 Xbox / PS4 / PS5 버튼 번호를 통일해준다.
+#   buttons: A/✕=0 B/○=1 X/□=2 Y/△=3 Back=4 Guide=5 Start=6 LStick=7 RStick=8 LB/L1=9 RB/R1=10
+#   axes:    LX=0 LY=1 RX=2 RY=3 LT=4 RT=5
+# 조이스틱 연결 후 `ros2 topic echo /joy` 로 번호 확인하고 다르면 여기만 수정.
+joy_node:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.1
+    autorepeat_rate: 20.0
+
+teleop_twist_joy_node:
+  ros__parameters:
+    require_enable_button: true
+    enable_button: 9          # LB / L1 누르고 있어야 움직임 (데드맨)
+    enable_turbo_button: 10   # RB / R1 누르면 빠르게
+    axis_linear:
+      x: 1                    # 왼쪽 스틱 위아래
+    scale_linear:
+      x: 0.3                  # m/s
+    scale_linear_turbo:
+      x: 0.6
+    axis_angular:
+      yaw: 2                  # 오른쪽 스틱 좌우
+    scale_angular:
+      yaw: 0.8                # rad/s
+    scale_angular_turbo:
+      yaw: 1.2
+    publish_stamped_twist: false

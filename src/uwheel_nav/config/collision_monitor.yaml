@@ -1,0 +1,54 @@
+# 아이패드 Foxglove (/cmd_vel) → teleop_avoidance(/cmd_vel_avoid) → collision_monitor → /cmd_vel_safe → motor_driver
+# cmd_vel_in_topic / cmd_vel_out_topic 은 teleop_safety.launch.py 가 덮어씀 (입력 /cmd_vel_avoid 또는 /cmd_vel_ros, 출력 /cmd_vel_safe_ros → 부호 변환 → /cmd_vel_safe)
+# (motor_driver 가 /cmd_vel_safe 를 받는 건 start_all_sensors_safe.sh 로 켰을 때만)
+#
+# 로봇 footprint (base_link 기준, 추정값 — 실측 후 수정 권장)
+#   앞 끝 x=0.58 (G3 가 맨 앞, G3 중심 x=0.543)
+#   뒤 끝 x=-0.02 (길이 0.60)
+#   좌우 y=±0.30 (폭 0.60)
+collision_monitor:
+  ros__parameters:
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    cmd_vel_in_topic: "/cmd_vel"
+    cmd_vel_out_topic: "/cmd_vel_safe"
+    state_topic: "/collision_monitor_state"
+    enable_stamped_cmd_vel: false     # teleop_twist_joy / motor_driver 모두 Twist
+    transform_tolerance: 0.5
+    source_timeout: 1.0               # 라이다 데이터가 1초 넘게 끊기면 정지
+    base_shift_correction: false      # odom 없이(조이스틱 전용) 동작
+    stop_pub_timeout: 2.0
+
+    # approach: 현재 명령 속도로 움직였을 때 time_before_collision 초 안에
+    # footprint 에 장애물이 닿으면 그만큼 감속/정지. 방향을 고려하므로
+    # 벽 앞에서 멈춘 뒤에도 후진·회전으로 빠져나올 수 있다.
+    # points 는 scan_merger 의 self_filter 박스와 반드시 같게 유지할 것
+    # (박스 안 점은 병합 단계에서 지워지므로, 이미 닿은 상태로 판정돼 갇히는 일이 없다)
+    polygons: ["FootprintApproach", "SlowZone"]
+    FootprintApproach:
+      type: "polygon"
+      action_type: "approach"
+      # 회전 중심(base_link x=0.47) 기준 좌표. base_link 기준 footprint x -0.03~0.59 → -0.50~0.12
+      points: "[[0.12, 0.31], [0.12, -0.31], [-0.50, -0.31], [-0.50, 0.31]]"
+      time_before_collision: 2.0         # 명령→실제 움직임 지연 약 0.8초 (2026-09-14 실측) 고려해 1.2 → 2.0
+      simulation_time_step: 0.1
+      min_points: 4
+      visualize: true
+      polygon_pub_topic: "/collision_monitor/footprint"
+      enabled: true
+    # 앞쪽 가까운 영역에 뭔가 있으면 속도 50%로 (앞 0.5m)
+    SlowZone:
+      type: "polygon"
+      action_type: "slowdown"
+      points: "[[0.63, 0.40], [0.63, -0.40], [0.11, -0.40], [0.11, 0.40]]"   # 회전 중심 기준 (base_link 0.58~1.10)
+      slowdown_ratio: 0.5
+      min_points: 4
+      visualize: true
+      polygon_pub_topic: "/collision_monitor/slow_zone"
+      enabled: true
+
+    observation_sources: ["merged_scan"]
+    merged_scan:
+      type: "scan"
+      topic: "/scan_merged_center"   # 원점 = 회전 중심 (바퀴 축). 제자리 회전 때 뒤쪽 휘둘림을 올바르게 예측
+      enabled: true

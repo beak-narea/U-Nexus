@@ -1,0 +1,25 @@
+repositories:
+  FAST_LIO_OUSTER:
+    type: git
+    url: https://github.com/OmerMersin/FAST_LIO_OUSTER.git
+    version: main
+  mdrobot_motor_driver:
+    type: git
+    url: https://github.com/TaesuYim/mdrobot_motor_driver.git
+    version: main
+  ouster-ros:
+    type: git
+    url: https://github.com/ouster-lidar/ouster-ros.git
+    version: ros2
+  serial:
+    type: git
+    url: https://github.com/RoverRobotics-forks/serial-ros2.git
+    version: master
+  ydlidar_ros2_driver:
+    type: git
+    url: https://github.com/YDLIDAR/ydlidar_ros2_driver.git
+    version: humble
+  ydlidar_sdk:
+    type: git
+    url: https://github.com/YDLIDAR/YDLidar-SDK.git
+    version: master

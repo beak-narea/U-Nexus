@@ -1,0 +1,30 @@
+# mdrobot_ros2_driver — dual-channel parameters.
+#
+# Edit the values here instead of passing options on the command line.
+#   ros2 launch mdrobot_ros2_driver dual.launch.py
+# To use a different file:
+#   ros2 launch mdrobot_ros2_driver dual.launch.py config:=/path/to/my.yaml
+#
+# "/**" applies these parameters to the node regardless of name/namespace.
+/**:
+  ros__parameters:
+    device_type: dual
+    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_B00163BY-if00-port0
+    baudrate: 19200
+    motor_id: 1
+    command_timeout: 0.5      # s; auto-stop if no new cmd_velocity (0 disables)
+    publish_rate: 15.0        # Hz; joint_states. Dual serial cycle ~50 ms → keep ≤15 Hz (higher overruns).
+    diag_rate: 2.0            # Hz; diagnostics
+    position_max_rpm: 100     # speed cap for cmd_position
+    auto_enable: true         # call enable() on startup
+    # -1 leave as-is / 0 disable / 1 enable (applies to both motors)
+    use_limit_sw: -1
+    # per channel; set to publish SI joint_states (rad/rad·s), e.g. [24.0, 24.0]. [0.0, 0.0] = raw
+    counts_per_rev: [0.0, 0.0]
+    # joint names for joint_states; ['', ''] -> auto (motor1, motor2)
+    joint_names: ['', '']
+    # /cmd_vel (geometry_msgs/Twist) -> left/right rpm. Calibrate for your robot.
+    wheel_separation: 0.30
+    wheel_radius: 0.05
+    # true: +linear.x -> negative rpm (same as keyboard_control / joystick_control)
+    cmd_vel_invert: true

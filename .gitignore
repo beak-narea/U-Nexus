@@ -1,0 +1,25 @@
+build/
+install/
+log/
+*.bag
+*.db3
+*.mcap
+rosbag2_*/
+bags/
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+*.onnx
+*.engine
+*.pt
+.env
+*.pem
+
+# 모터 실험 로그
+motor_data_*.csv
+src/ydlidar_sdk/
+
+src/ouster-ros/
+src/FAST_LIO_OUSTER/doc/
+src/ydlidar_sdk/
